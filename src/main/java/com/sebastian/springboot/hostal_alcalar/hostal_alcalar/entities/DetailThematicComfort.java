@@ -1,6 +1,5 @@
 package com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -32,13 +31,12 @@ public class DetailThematicComfort {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "FK_THEMATIC")
     @Comment("Temática relacionada")
-    @JsonIgnore
+    @JsonIgnore //No necesito esto acá
     private Thematic thematic;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "FK_COMFORT")
     @Comment("Comodidad relacionada")
-    //@JsonIgnore
     private Comfort comfort;
 
 }

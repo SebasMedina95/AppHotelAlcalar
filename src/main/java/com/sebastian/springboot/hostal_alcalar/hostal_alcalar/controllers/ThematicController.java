@@ -6,6 +6,7 @@ import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.common.utils.Respo
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.Thematic;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.services.ThematicService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/thematics")
+@Tag(name = "Controlador de Temáticas", description = "Operaciones relacionadas con las temáticas")
 public class ThematicController {
 
     private final ThematicService thematicService;
