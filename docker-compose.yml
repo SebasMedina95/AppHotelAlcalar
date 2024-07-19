@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+
+  postgres-db:
+    image: postgres:16.3-alpine3.19
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USERNAME_DOCKER}
+      POSTGRES_DB: ${DB_NAME_DOCKER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD_DOCKER}
+    container_name: apphotelalcalar
+    volumes:
+      - ./containers/postgres:/var/lib/postgresql/data
+    ports:
+      - 15222:5432

@@ -29,5 +29,14 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+### Env ###
+.env
+
 ### VS Code ###
 .vscode/
+
+### IntelliJ ###
+.idea/
+
+### Contenedores Docker ###
+containers/
