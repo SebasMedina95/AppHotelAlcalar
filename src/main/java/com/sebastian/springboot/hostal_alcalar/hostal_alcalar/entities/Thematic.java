@@ -11,10 +11,10 @@ import java.util.Set;
 
 @Entity
 @Table(name = "TBL_THEMATICS")
-@JsonIgnoreProperties({"rooms"})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Data
-@EqualsAndHashCode(exclude = "rooms")
-@ToString(exclude = "rooms")
+@EqualsAndHashCode(exclude = {"rooms", "detailThematicComforts"})
+@ToString(exclude = {"rooms", "detailThematicComforts"})
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -57,8 +57,12 @@ public class Thematic {
     @Comment("Fecha actualización de la temática")
     private Date dateUpdated;
 
-    @OneToMany(mappedBy = "thematic", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "thematic", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonManagedReference
     private Set<Room> rooms;
+
+    @OneToMany(mappedBy = "thematic", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private Set<DetailThematicComfort> detailThematicComforts;
 
 }

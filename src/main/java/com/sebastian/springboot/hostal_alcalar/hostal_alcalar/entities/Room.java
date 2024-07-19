@@ -50,7 +50,7 @@ public class Room {
     @Comment("Fecha actualización de la habitación")
     private Date dateUpdated;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "FK_THEMATIC")
     @JsonBackReference
     @Comment("Temática relacionada")
