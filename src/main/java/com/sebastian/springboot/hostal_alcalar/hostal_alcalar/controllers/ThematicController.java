@@ -35,9 +35,25 @@ public class ThematicController {
 
     @GetMapping("/find-by-id/{id}")
     @Operation(summary = "Obtener temáticas por ID", description = "Obtener una temática dado el ID")
-    public ResponseEntity<ApiResponse<Thematic>> findById(@PathVariable Long id){
+    public ResponseEntity<ApiResponse<Thematic>> findById(@PathVariable String id){
 
-        ResponseWrapper<Thematic> thematic = thematicService.findById(id);
+        ResponseWrapper<Thematic> thematic;
+
+        try {
+            Long thematicId = Long.parseLong(id);
+            thematic = thematicService.findById(thematicId);
+        }catch (NumberFormatException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(
+                            null,
+                            new ApiResponse.Meta(
+                                    "El ID proporcionado es inválido.",
+                                    HttpStatus.OK.value(),
+                                    LocalDateTime.now()
+                            )
+                    ));
+        }
+
         if( thematic.getData() != null ){
             return ResponseEntity.status(HttpStatus.OK)
                     .body(new ApiResponse<>(
