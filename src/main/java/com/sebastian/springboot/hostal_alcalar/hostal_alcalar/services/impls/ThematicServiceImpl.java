@@ -10,11 +10,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class ThematicServiceImpl implements ThematicService {
 
     static String dummiesUser = "usuario123";
+    private static final Logger logger = LoggerFactory.getLogger(ThematicServiceImpl.class);
     private final ThematicRepository thematicRepository;
 
     @Autowired
@@ -37,13 +40,26 @@ public class ThematicServiceImpl implements ThematicService {
     @Override
     public ResponseWrapper<Thematic> findById(Long id) {
 
-        Optional<Thematic> planOptional = thematicRepository.getByIdComplementated(id);
-        if( planOptional.isPresent() ){
-            Thematic thematic = planOptional.orElseThrow();
-            return new ResponseWrapper<>(thematic, "Temática encontrada por ID correctamente");
-        }
+        logger.info("Iniciando Acción - Obteniendo una Temática por ID");
 
-        return new ResponseWrapper<>(null, "La temática no pudo ser encontrado por el ID");
+        try{
+
+            Optional<Thematic> planOptional = thematicRepository.getByIdComplementated(id);
+            if( planOptional.isPresent() ){
+                Thematic thematic = planOptional.orElseThrow();
+                logger.info("La temática fue encontrada correctamente dado su ID {}", id);
+                return new ResponseWrapper<>(thematic, "Temática encontrada por ID correctamente");
+            }
+
+            logger.info("La temática no fue encontrada dado su ID {}", id);
+            return new ResponseWrapper<>(null, "La temática no pudo ser encontrado por el ID " + id);
+
+        }catch (Exception err){
+
+            logger.error("Ocurrió un error al intentar obtener la temática por ID {}, detalles: ", id, err);
+            return new ResponseWrapper<>(null, "La temática no pudo ser encontrado por el ID");
+
+        }
 
     }
 

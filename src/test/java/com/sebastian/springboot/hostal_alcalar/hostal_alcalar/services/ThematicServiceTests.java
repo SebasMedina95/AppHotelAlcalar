@@ -24,7 +24,7 @@ import static org.mockito.Mockito.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 @ExtendWith(MockitoExtension.class)
-public class ThematicServiceTests {
+class ThematicServiceTests {
 
     @Mock
     private ThematicRepository thematicRepository;
@@ -58,10 +58,14 @@ public class ThematicServiceTests {
     void testGetThematicByIdSuccess() {
 
         // Configurar el comportamiento simulado del repositorio
+        Long id = 1L;  // Valor específico en lugar de anyLong()
         when(thematicRepository.getByIdComplementated(anyLong())).thenReturn(Optional.of(thematic1));
 
         // Llamar al método de servicio y verificar el resultado
-        ResponseWrapper<Thematic> response = thematicService.findById(anyLong());
+        ResponseWrapper<Thematic> response = thematicService.findById(id);
+
+        // Verificar la llamada al método del repositorio
+        verify(thematicRepository).getByIdComplementated(id);
 
         assertNotNull(response);
         assertEquals("Temática encontrada por ID correctamente", response.getErrorMessage());
@@ -75,13 +79,17 @@ public class ThematicServiceTests {
     void testGetByIdNotFound() {
 
         // Configurar el comportamiento simulado del repositorio
+        Long id = 1L;  // Valor específico en lugar de anyLong()
         when(thematicRepository.getByIdComplementated(anyLong())).thenReturn(Optional.empty());
 
         // Llamar al método de servicio y verificar el resultado
-        ResponseWrapper<Thematic> response = thematicService.findById(anyLong());
+        ResponseWrapper<Thematic> response = thematicService.findById(id);
+
+        // Verificar la llamada al método del repositorio
+        verify(thematicRepository).getByIdComplementated(id);
 
         assertNotNull(response);
-        assertEquals("La temática no pudo ser encontrado por el ID", response.getErrorMessage());
+        assertEquals("La temática no pudo ser encontrado por el ID " + id, response.getErrorMessage());
         assertNull(response.getData());
     }
 
@@ -94,6 +102,9 @@ public class ThematicServiceTests {
 
         // Llamar al método de servicio y verificar el resultado
         ResponseWrapper<Thematic> response = thematicService.findById(id);
+
+        // Verificar la llamada al método del repositorio
+        verify(thematicRepository).getByIdComplementated(id);
 
         assertNotNull(response);
         assertEquals("Temática encontrada por ID correctamente", response.getErrorMessage());

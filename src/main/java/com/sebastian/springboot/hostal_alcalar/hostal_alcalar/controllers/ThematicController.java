@@ -23,14 +23,12 @@ import java.time.LocalDateTime;
 public class ThematicController {
 
     private final ThematicService thematicService;
-    private final CustomPagedResourcesAssembler<Thematic> customPagedResourcesAssembler;
 
     @Autowired
     public ThematicController(
             ThematicService thematicService,
             CustomPagedResourcesAssembler<Thematic> customPagedResourcesAssembler){
         this.thematicService = thematicService;
-        this.customPagedResourcesAssembler = customPagedResourcesAssembler;
     }
 
     @GetMapping("/find-by-id/{id}")
@@ -39,6 +37,7 @@ public class ThematicController {
 
         ResponseWrapper<Thematic> thematic;
 
+        //Validamos que el ID que nos proporcionan por la URL sea válido
         try {
             Long thematicId = Long.parseLong(id);
             thematic = thematicService.findById(thematicId);
@@ -54,6 +53,7 @@ public class ThematicController {
                     ));
         }
 
+        //Si es diferente de null implica que lo encontramos
         if( thematic.getData() != null ){
             return ResponseEntity.status(HttpStatus.OK)
                     .body(new ApiResponse<>(
@@ -66,6 +66,7 @@ public class ThematicController {
                     ));
         }
 
+        //En caso contrario, algún null, ocurrió un error
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ApiResponse<>(
                         null,
