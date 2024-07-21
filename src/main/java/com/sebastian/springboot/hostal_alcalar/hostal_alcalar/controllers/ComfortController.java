@@ -7,6 +7,7 @@ import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.common.utils.Error
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.common.utils.ResponseWrapper;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.Comfort;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.dtos.create.CreateComfortDto;
+import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.dtos.update.UpdateComfortDto;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.services.ComfortService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -137,13 +138,30 @@ public class ComfortController {
 
     @GetMapping("/find-by-id/{id}")
     @Operation(summary = "Obtener comodidades por ID", description = "Obtener una comodidad dado el ID")
-    public ResponseEntity<ApiResponse<Comfort>> findById(@PathVariable Long id){
+    public ResponseEntity<ApiResponse<Comfort>> findById(@PathVariable String id){
 
-        ResponseWrapper<Comfort> plan = comfortService.findById(id);
-        if( plan.getData() != null ){
+        ResponseWrapper<Comfort> comfort;
+
+        //Validamos que el ID que nos proporcionan por la URL sea válido
+        try {
+            Long comfortId = Long.parseLong(id);
+            comfort = comfortService.findById(comfortId);
+        }catch (NumberFormatException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(
+                            null,
+                            new ApiResponse.Meta(
+                                    "El ID proporcionado es inválido.",
+                                    HttpStatus.OK.value(),
+                                    LocalDateTime.now()
+                            )
+                    ));
+        }
+
+        if( comfort.getData() != null ){
             return ResponseEntity.status(HttpStatus.OK)
                     .body(new ApiResponse<>(
-                            plan.getData(),
+                            comfort.getData(),
                             new ApiResponse.Meta(
                                     "Comodidad obtenida por ID.",
                                     HttpStatus.OK.value(),
@@ -156,7 +174,115 @@ public class ComfortController {
                 .body(new ApiResponse<>(
                         null,
                         new ApiResponse.Meta(
-                                plan.getErrorMessage(),
+                                comfort.getErrorMessage(),
+                                HttpStatus.BAD_REQUEST.value(),
+                                LocalDateTime.now()
+                        )
+                ));
+
+    }
+
+    @PutMapping("update-by-id/{id}")
+    @Operation(summary = "Actualizar una comodidad", description = "Actualizar una comodidad dado el ID")
+    public ResponseEntity<ApiResponse<Object>> update(
+            @Valid
+            @RequestBody UpdateComfortDto comfortRequest,
+            BindingResult result,
+            @PathVariable String id
+    ){
+
+        if(result.hasFieldErrors()){
+            ErrorsValidationsResponse errors = new ErrorsValidationsResponse();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(
+                            errors.validation(result),
+                            new ApiResponse.Meta(
+                                    "Errores en los campos",
+                                    HttpStatus.BAD_REQUEST.value(),
+                                    LocalDateTime.now()
+                            )
+                    ));
+        }
+
+        ResponseWrapper<Comfort> comfortUpdate;
+
+        try {
+            Long comfortId = Long.parseLong(id);
+            comfortUpdate = comfortService.update(comfortId, comfortRequest);
+        }catch (NumberFormatException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(
+                            null,
+                            new ApiResponse.Meta(
+                                    "El ID proporcionado es inválido.",
+                                    HttpStatus.OK.value(),
+                                    LocalDateTime.now()
+                            )
+                    ));
+        }
+
+        if( comfortUpdate.getData() != null ){
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(new ApiResponse<>(
+                            comfortUpdate.getData(),
+                            new ApiResponse.Meta(
+                                    "Comodidad Actualizada Correctamente.",
+                                    HttpStatus.OK.value(),
+                                    LocalDateTime.now()
+                            )
+                    ));
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>(
+                        null,
+                        new ApiResponse.Meta(
+                                comfortUpdate.getErrorMessage(),
+                                HttpStatus.BAD_REQUEST.value(),
+                                LocalDateTime.now()
+                        )
+                ));
+
+    }
+
+    @DeleteMapping("/delete-by-id/{id}")
+    @Operation(summary = "Eliminar un plan", description = "Eliminar un plan pero de manera lógica")
+    public ResponseEntity<ApiResponse<Comfort>> delete(@PathVariable String id){
+
+        ResponseWrapper<Comfort> comfortUpdate;
+
+        try {
+            Long comfortId = Long.parseLong(id);
+            comfortUpdate = comfortService.delete(comfortId);
+        }catch (NumberFormatException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(
+                            null,
+                            new ApiResponse.Meta(
+                                    "El ID proporcionado es inválido.",
+                                    HttpStatus.OK.value(),
+                                    LocalDateTime.now()
+                            )
+                    ));
+        }
+
+        if( comfortUpdate.getData() != null ){
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(new ApiResponse<>(
+                            comfortUpdate.getData(),
+                            new ApiResponse.Meta(
+                                    "Comodidad Eliminada Correctamente.",
+                                    HttpStatus.OK.value(),
+                                    LocalDateTime.now()
+                            )
+                    ));
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>(
+                        null,
+                        new ApiResponse.Meta(
+                                comfortUpdate.getErrorMessage(),
                                 HttpStatus.BAD_REQUEST.value(),
                                 LocalDateTime.now()
                         )

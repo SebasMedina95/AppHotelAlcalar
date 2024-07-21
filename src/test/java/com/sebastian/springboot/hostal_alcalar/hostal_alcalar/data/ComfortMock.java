@@ -2,6 +2,7 @@ package com.sebastian.springboot.hostal_alcalar.hostal_alcalar.data;
 
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.Comfort;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.dtos.create.CreateComfortDto;
+import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.dtos.update.UpdateComfortDto;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -20,6 +21,13 @@ public class ComfortMock {
         CreateComfortDto comfortDto = new CreateComfortDto();
         comfortDto.setName("Test Comfort");
         comfortDto.setIcon("<i class='fa-solid fa-bath'></i>");
+        return comfortDto;
+    }
+
+    public static UpdateComfortDto updateComfortDto() {
+        UpdateComfortDto comfortDto = new UpdateComfortDto();
+        comfortDto.setName("Test Comfort Update");
+        comfortDto.setIcon("<i class='fa-solid fa-trash'></i>");
         return comfortDto;
     }
 

@@ -3,6 +3,7 @@ package com.sebastian.springboot.hostal_alcalar.hostal_alcalar.services.impls;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.common.utils.ResponseWrapper;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.Comfort;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.dtos.create.CreateComfortDto;
+import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.dtos.update.UpdateComfortDto;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.repositories.ComfortRepository;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.services.ComfortService;
 import org.slf4j.Logger;
@@ -67,7 +68,10 @@ public class ComfortServiceImpl implements ComfortService {
     @Override
     public Page<Comfort> findAll(String search, Pageable pageable) {
 
+        logger.info("Iniciando Acción - Obtener todas las comodidades paginadas y con filtro");
         Specification<Comfort> spec = this.searchByFilter(search);
+
+        logger.info("Listado de comodidades obtenida");
         return comfortRepository.findAll(spec, pageable);
 
     }
@@ -75,25 +79,107 @@ public class ComfortServiceImpl implements ComfortService {
     @Override
     public ResponseWrapper<Comfort> findById(Long id) {
 
-        Optional<Comfort> comfortOptional = comfortRepository.findById(id);
-        if( comfortOptional.isPresent() ){
-            Comfort comfort = comfortOptional.orElseThrow();
-            return new ResponseWrapper<>(comfort, "Comodidad encontrada por ID correctamente");
+        logger.info("Iniciando Acción - Obtener una comodidad dado su ID");
+
+        try{
+
+            Optional<Comfort> comfortOptional = comfortRepository.findById(id);
+
+            if( comfortOptional.isPresent() ){
+                Comfort comfort = comfortOptional.orElseThrow();
+                logger.info("Comodidad obtenida por su ID");
+                return new ResponseWrapper<>(comfort, "Comodidad encontrada por ID correctamente");
+            }
+
+            logger.info("La comodidad no pudo ser encontrada cone el ID {}", id);
+            return new ResponseWrapper<>(null, "La comodidad no pudo ser encontrado por el ID " + id);
+
+        }catch (Exception err) {
+
+            logger.error("Ocurrió un error al intentar obtener comodidad por ID, detalles ...", err);
+            return new ResponseWrapper<>(null, "La comodidad no pudo ser encontrado por el ID");
+
         }
-
-        return new ResponseWrapper<>(null, "La comodidad no pudo ser encontrado por el ID " + id);
-
 
     }
 
     @Override
-    public ResponseWrapper<Comfort> update(Long id, Comfort thematic) {
-        return null;
+    public ResponseWrapper<Comfort> update(Long id, UpdateComfortDto comfort) {
+
+        logger.info("Iniciando Acción - Actualizar una comodidad dado su ID");
+
+        try{
+
+            Optional<Comfort> comfortOptional = comfortRepository.findById(id);
+            if( comfortOptional.isPresent() ){
+
+                Comfort comfortDb = comfortOptional.orElseThrow();
+
+                //? Validemos que no se repita la comodidad
+                String comfortName = comfort.getName().trim().toUpperCase();
+                Optional<Comfort> getComfortOptionalName = comfortRepository.getComfortByNameForEdit(comfortName, id);
+
+                if( getComfortOptionalName.isPresent() ){
+                    logger.info("La comodidad no se puede actualizar porque el nombre ya está registrado");
+                    return new ResponseWrapper<>(null, "El nombre de la comodidad ya está registrado");
+                }
+
+                //? Vamos a actualizar si llegamos hasta acá
+                comfortDb.setName(comfortName);
+                comfortDb.setIcon(comfort.getIcon());
+                comfortDb.setUserUpdated(dummiesUser);
+                comfortDb.setDateUpdated(new Date());
+
+                logger.info("La comodidad fue actualizada correctamente");
+                return new ResponseWrapper<>(comfortRepository.save(comfortDb), "Comodidad Actualizada Correctamente");
+
+            }else{
+
+                return new ResponseWrapper<>(null, "La comodidad no fue encontrada");
+
+            }
+
+        }catch (Exception err){
+
+            logger.error("Ocurrió un error al intentar actualizar comodidad por ID, detalles ...", err);
+            return new ResponseWrapper<>(null, "La comodidad no pudo ser actualizada");
+
+        }
+
     }
 
     @Override
     public ResponseWrapper<Comfort> delete(Long id) {
-        return null;
+
+        try{
+
+            Optional<Comfort> comfortOptional = comfortRepository.findById(id);
+
+            if( comfortOptional.isPresent() ){
+
+                Comfort comfortDb = comfortOptional.orElseThrow();
+
+                //? Vamos a actualizar si llegamos hasta acá
+                //? ESTO SERÁ UN ELIMINADO LÓGICO!
+                comfortDb.setStatus(false);
+                comfortDb.setUserUpdated("usuario123");
+                comfortDb.setDateUpdated(new Date());
+
+                return new ResponseWrapper<>(comfortRepository.save(comfortDb), "Comodidad Eliminada Correctamente");
+
+            }else{
+
+                return new ResponseWrapper<>(null, "La comodidad no fue encontrado");
+
+            }
+
+        }catch (Exception err) {
+
+            logger.error("Ocurrió un error al intentar eliminar lógicamente comodidad por ID, detalles ...", err);
+            return new ResponseWrapper<>(null, "La comodidad no pudo ser eliminada");
+
+        }
+
     }
 
     //* Para el buscador de planes.

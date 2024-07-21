@@ -5,6 +5,7 @@ import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.common.utils.Respo
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.data.ComfortMock;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.Comfort;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.dtos.create.CreateComfortDto;
+import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.dtos.update.UpdateComfortDto;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.repositories.ComfortRepository;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.services.impls.ComfortServiceImpl;
 import jakarta.validation.*;
@@ -38,6 +39,7 @@ class ComfortServiceTests {
     private ComfortServiceImpl comfortService;
 
     private CreateComfortDto comfortDto;
+    private UpdateComfortDto comfortDtoUpdt;
     private Comfort comfort;
     private List<Comfort> comfortList;
     private Validator validator;
@@ -48,6 +50,7 @@ class ComfortServiceTests {
     @BeforeEach
     public void setUp() {
         comfortDto = ComfortMock.createComfortDto();
+        comfortDtoUpdt = ComfortMock.updateComfortDto();
         comfort = ComfortMock.createComfort();
         comfortList = ComfortMock.comfortList();
 
@@ -233,6 +236,119 @@ class ComfortServiceTests {
         assertNotNull(response);
         assertEquals("La comodidad no pudo ser encontrado por el ID " + id, response.getErrorMessage());
         assertNull(response.getData());
+    }
+
+    @Test
+    @DisplayName("Test para actualizar una comodidad pero no se encontró por ID")
+    void testUpdateComfortNotFound() {
+
+        when(comfortRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        ResponseWrapper<Comfort> response = comfortService.update(1L, comfortDtoUpdt);
+
+        assertNull(response.getData());
+        assertEquals("La comodidad no fue encontrada", response.getErrorMessage());
+        verify(comfortRepository, times(1)).findById(anyLong());
+        verify(comfortRepository, never()).save(any(Comfort.class));
+
+    }
+
+    @Test
+    @DisplayName("Test para actualizar una comodidad pero el nombre de comodidad ya existe")
+    void testUpdate_ComfortNameAlreadyExists() {
+
+        when(comfortRepository.findById(anyLong())).thenReturn(Optional.of(comfort));
+        when(comfortRepository.getComfortByNameForEdit(anyString(), anyLong())).thenReturn(Optional.of(new Comfort()));
+
+        ResponseWrapper<Comfort> response = comfortService.update(1L, comfortDtoUpdt);
+
+        assertNull(response.getData());
+        assertEquals("El nombre de la comodidad ya está registrado", response.getErrorMessage());
+        verify(comfortRepository, times(1)).findById(anyLong());
+        verify(comfortRepository, times(1)).getComfortByNameForEdit(anyString(), anyLong());
+        verify(comfortRepository, never()).save(any(Comfort.class));
+
+    }
+
+    @Test
+    @DisplayName("Test para actualizar una comodidad y la actualización es exitosa")
+    void testUpdate_SuccessfulUpdate() {
+
+        when(comfortRepository.findById(anyLong())).thenReturn(Optional.of(comfort));
+        when(comfortRepository.getComfortByNameForEdit(anyString(), anyLong())).thenReturn(Optional.empty());
+        when(comfortRepository.save(any(Comfort.class))).thenReturn(comfort);
+
+        ResponseWrapper<Comfort> response = comfortService.update(1L, comfortDtoUpdt);
+
+        assertNotNull(response.getData());
+        assertEquals("Comodidad Actualizada Correctamente", response.getErrorMessage());
+        assertEquals("Test Comfort Update".toUpperCase(), response.getData().getName());
+        assertEquals("<i class='fa-solid fa-trash'></i>", response.getData().getIcon());
+        verify(comfortRepository, times(1)).findById(anyLong());
+        verify(comfortRepository, times(1)).getComfortByNameForEdit(anyString(), anyLong());
+        verify(comfortRepository, times(1)).save(any(Comfort.class));
+
+    }
+
+    @Test
+    @DisplayName("Test para actualizar una comodidad y ocurre un error Excepción")
+    void testUpdate_ExceptionThrown() {
+        when(comfortRepository.findById(anyLong())).thenThrow(new RuntimeException("Database error"));
+
+        ResponseWrapper<Comfort> response = comfortService.update(1L, comfortDtoUpdt);
+
+        assertNull(response.getData());
+        assertEquals("La comodidad no pudo ser actualizada", response.getErrorMessage());
+        verify(comfortRepository, times(1)).findById(anyLong());
+        verify(comfortRepository, never()).save(any(Comfort.class));
+    }
+
+    @Test
+    @DisplayName("Test para eliminar lógicamente una comodidad pero no se encuentra")
+    void testDeleteComfortNotFound() {
+
+        when(comfortRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        ResponseWrapper<Comfort> response = comfortService.delete(1L);
+
+        assertNull(response.getData());
+        assertEquals("La comodidad no fue encontrado", response.getErrorMessage());
+        verify(comfortRepository, times(1)).findById(anyLong());
+        verify(comfortRepository, never()).save(any(Comfort.class));
+
+    }
+
+    @Test
+    @DisplayName("Test para eliminar lógicamente una comodidad y es encontrada")
+    void testDeleteSuccessfulLogicalDelete() {
+
+        when(comfortRepository.findById(anyLong())).thenReturn(Optional.of(comfort));
+        when(comfortRepository.save(any(Comfort.class))).thenReturn(comfort);
+
+        ResponseWrapper<Comfort> response = comfortService.delete(1L);
+
+        assertNotNull(response.getData());
+        assertEquals("Comodidad Eliminada Correctamente", response.getErrorMessage());
+        assertFalse(response.getData().getStatus());
+        assertEquals("usuario123", response.getData().getUserUpdated());
+        verify(comfortRepository, times(1)).findById(anyLong());
+        verify(comfortRepository, times(1)).save(any(Comfort.class));
+
+    }
+
+    @Test
+    @DisplayName("Test para eliminar lógicamente una comodidad y ocurre un error Excepción")
+    void testDeleteExceptionThrown() {
+
+        when(comfortRepository.findById(anyLong())).thenThrow(new RuntimeException("Database error"));
+
+        ResponseWrapper<Comfort> response = comfortService.delete(1L);
+
+        assertNull(response.getData());
+        assertEquals("La comodidad no pudo ser eliminada", response.getErrorMessage());
+        verify(comfortRepository, times(1)).findById(anyLong());
+        verify(comfortRepository, never()).save(any(Comfort.class));
+
     }
 
 }

@@ -12,4 +12,7 @@ public interface ComfortRepository extends JpaRepository<Comfort, Long>, JpaSpec
     @Query("SELECT c FROM Comfort c WHERE UPPER(c.name) = UPPER(:comfortName)")
     Optional<Comfort> getComfortByName(String comfortName);
 
+    @Query("SELECT c FROM Comfort c WHERE UPPER(c.name) = UPPER(:comfortName) AND c.id <> :id")
+    Optional<Comfort> getComfortByNameForEdit(String comfortName, Long id);
+
 }
