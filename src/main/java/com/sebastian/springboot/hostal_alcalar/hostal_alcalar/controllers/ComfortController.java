@@ -58,7 +58,7 @@ public class ComfortController {
                     .body(new ApiResponse<>(
                             errors.validation(result),
                             new ApiResponse.Meta(
-                                    "Errores en los campos",
+                                    "Errores en los campos de creación",
                                     HttpStatus.BAD_REQUEST.value(),
                                     LocalDateTime.now()
                             )
@@ -151,7 +151,7 @@ public class ComfortController {
                     .body(new ApiResponse<>(
                             null,
                             new ApiResponse.Meta(
-                                    "El ID proporcionado es inválido.",
+                                    "El ID proporcionado para la búsqueda es inválido.",
                                     HttpStatus.OK.value(),
                                     LocalDateTime.now()
                             )
@@ -197,7 +197,7 @@ public class ComfortController {
                     .body(new ApiResponse<>(
                             errors.validation(result),
                             new ApiResponse.Meta(
-                                    "Errores en los campos",
+                                    "Errores en los campos de actualización",
                                     HttpStatus.BAD_REQUEST.value(),
                                     LocalDateTime.now()
                             )

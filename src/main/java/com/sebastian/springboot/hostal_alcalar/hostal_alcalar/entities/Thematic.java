@@ -18,6 +18,21 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+// Para la carga dinámica y aplicar las relaciones en paginación y filtro embebido.
+// Le damos el nombre de Thematic.detail y asociamos las entidades de relación por los campos referenciales,
+// si dado el caso un campo referencial requerimos referencial un elemento de este particular, aplicamos un subgraph.
+//? ESTO ES USADO PARA CUANDO APLICAMOS findAll() o findOne() de JPA/Hibernate, solo para estos casos
+@NamedEntityGraph(
+        name = "Thematic.detail",
+        attributeNodes = {
+                @NamedAttributeNode("rooms"),
+                @NamedAttributeNode("detailThematicComforts"),
+                @NamedAttributeNode(value = "detailThematicComforts", subgraph = "detailThematicComforts-comfort")
+        },
+        subgraphs = {
+                @NamedSubgraph(name = "detailThematicComforts-comfort", attributeNodes = @NamedAttributeNode("comfort"))
+        }
+)
 public class Thematic {
 
     @Id

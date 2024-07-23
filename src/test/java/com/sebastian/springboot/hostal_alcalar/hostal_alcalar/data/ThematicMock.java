@@ -4,7 +4,9 @@ import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.Comfort;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.DetailThematicComfort;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.Room;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.Thematic;
+import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.dtos.create.CreateThematicDto;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -146,6 +148,14 @@ public class ThematicMock {
                         comfortDetail13,
                         comfortDetail4
                 )));
+    }
+
+    public static CreateThematicDto createThematicDto() {
+        return CreateThematicDto.builder()
+                .name("Test Thematic")
+                .description("Test Description")
+                .comfortsListId(Arrays.asList(1L, 2L, 3L, 4L, 5L))
+                .build();
     }
 
 }

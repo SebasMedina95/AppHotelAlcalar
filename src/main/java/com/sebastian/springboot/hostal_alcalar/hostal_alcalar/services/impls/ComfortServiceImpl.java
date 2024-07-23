@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.Optional;
@@ -31,13 +32,14 @@ public class ComfortServiceImpl implements ComfortService {
         this.comfortRepository = comfortRepository;
     }
     @Override
+    @Transactional
     public ResponseWrapper<Comfort> create(CreateComfortDto comfort) {
 
         logger.info("Iniciando Acción - Creación de una comodidad");
 
         try{
 
-            //? Validemos que no se repita la plaza
+            //? Validemos que no se repita la comodidad
             String comfortName = comfort.getName().trim().toUpperCase();
             Optional<Comfort> getComfortOptional = comfortRepository.getComfortByName(comfortName);
             if( getComfortOptional.isPresent() )
@@ -66,6 +68,7 @@ public class ComfortServiceImpl implements ComfortService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<Comfort> findAll(String search, Pageable pageable) {
 
         logger.info("Iniciando Acción - Obtener todas las comodidades paginadas y con filtro");
@@ -77,6 +80,7 @@ public class ComfortServiceImpl implements ComfortService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseWrapper<Comfort> findById(Long id) {
 
         logger.info("Iniciando Acción - Obtener una comodidad dado su ID");
@@ -104,6 +108,7 @@ public class ComfortServiceImpl implements ComfortService {
     }
 
     @Override
+    @Transactional
     public ResponseWrapper<Comfort> update(Long id, UpdateComfortDto comfort) {
 
         logger.info("Iniciando Acción - Actualizar una comodidad dado su ID");
@@ -149,6 +154,7 @@ public class ComfortServiceImpl implements ComfortService {
     }
 
     @Override
+    @Transactional
     public ResponseWrapper<Comfort> delete(Long id) {
 
         try{
