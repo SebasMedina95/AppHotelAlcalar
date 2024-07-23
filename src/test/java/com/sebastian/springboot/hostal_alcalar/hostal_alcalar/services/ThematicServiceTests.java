@@ -20,6 +20,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -52,6 +60,9 @@ class ThematicServiceTests {
     //Para la creación
     private CreateThematicDto createThematicDto;
 
+    //Listado genérico
+    private List<Thematic> thematics;
+
     //Para proveer multiples acciones
     private static Stream<Arguments> provideThematicIds() {
         return Stream.of(
@@ -70,6 +81,9 @@ class ThematicServiceTests {
 
         // Configuración para la creación
         createThematicDto = ThematicMock.createThematicDto();
+
+        // Configuración de listado
+        thematics = ThematicMock.getMockThematics();
     }
 
     @Test
@@ -243,6 +257,23 @@ class ThematicServiceTests {
         verify(thematicRepository, times(1)).save(any(Thematic.class));
         verify(comfortRepository, never()).findById(anyLong());
         verify(detailThematicComfortRepository, never()).save(any(DetailThematicComfort.class));
+    }
+
+    @Test
+    @DisplayName("Test para listar todas las temáticas con paginación, filtro y ajuste de relaciones")
+    void testFindAll() {
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "name"));
+        Page<Thematic> page = new PageImpl<>(thematics, pageable, thematics.size());
+
+        when(thematicRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(page);
+
+        Page<Thematic> result = thematicService.findAll("searchTerm", pageable);
+
+        assertNotNull(result);
+        assertEquals(2, result.getTotalElements());
+        assertEquals(thematics.get(0), result.getContent().get(0));
+        assertEquals(thematics.get(1), result.getContent().get(1));
+        verify(thematicRepository, times(1)).findAll(any(Specification.class), eq(pageable));
     }
 
 
