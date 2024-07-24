@@ -246,7 +246,7 @@ public class ComfortController {
     }
 
     @DeleteMapping("/delete-by-id/{id}")
-    @Operation(summary = "Eliminar un plan", description = "Eliminar un plan pero de manera lógica")
+    @Operation(summary = "Eliminar una comodidad", description = "Eliminar una comodidad pero de manera lógica")
     public ResponseEntity<ApiResponse<Comfort>> delete(@PathVariable String id){
 
         ResponseWrapper<Comfort> comfortUpdate;

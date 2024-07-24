@@ -4,10 +4,7 @@ import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.Thematic;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
@@ -31,4 +28,10 @@ public interface ThematicRepository extends JpaRepository<Thematic, Long>, JpaSp
     @Query("SELECT t FROM Thematic t WHERE UPPER(t.name) = UPPER(:thematicName)")
     Optional<Thematic> getThematicByName(String thematicName);
 
+    @Modifying
+    @Query("DELETE FROM DetailThematicComfort dtc WHERE dtc.thematic.id = :thematicId")
+    void deleteDetailThematicComfortsByThematicId(@Param("thematicId") Long thematicId);
+
+    @Query("SELECT t FROM Thematic t WHERE UPPER(t.name) = UPPER(:thematicName) AND t.id <> :id")
+    Optional<Thematic> getThematicByNameForEdit(String thematicName, Long id);
 }

@@ -5,6 +5,7 @@ import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.DetailThe
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.Room;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.Thematic;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.dtos.create.CreateThematicDto;
+import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.dtos.update.UpdateThematicDto;
 
 import java.util.*;
 
@@ -147,6 +148,7 @@ public class ThematicMock {
                 )));
     }
 
+    //Para crear
     public static CreateThematicDto createThematicDto() {
         return CreateThematicDto.builder()
                 .name("Test Thematic")
@@ -155,6 +157,7 @@ public class ThematicMock {
                 .build();
     }
 
+    //Para mostrar por ID
     public static List<Thematic> getMockThematics() {
         Thematic thematic1 = new Thematic();
         thematic1.setId(1L);
@@ -165,6 +168,33 @@ public class ThematicMock {
         thematic2.setName("Thematic 2");
 
         return List.of(thematic1, thematic2);
+    }
+
+    //Para la actualización
+    public UpdateThematicDto getUpdateThematicDto() {
+        UpdateThematicDto dto = new UpdateThematicDto();
+        dto.setName("Updated Thematic");
+        dto.setDescription("Updated Description");
+        dto.setComfortsListId(List.of(1L, 2L, 3L));
+        return dto;
+    }
+
+    public Thematic getThematic() {
+        Thematic thematic = new Thematic();
+        thematic.setId(1L);
+        thematic.setName("Original Thematic");
+        thematic.setDescription("Original Description");
+        thematic.setUserUpdated("dummyUser");
+        thematic.setDateUpdated(new Date());
+        thematic.setDetailThematicComforts(new HashSet<>());
+        return thematic;
+    }
+
+    public Comfort getComfort() {
+        Comfort comfort = new Comfort();
+        comfort.setId(1L);
+        comfort.setName("Comfort");
+        return comfort;
     }
 
 }

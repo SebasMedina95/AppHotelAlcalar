@@ -6,6 +6,7 @@ import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.DetailThe
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.Room;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.Thematic;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.dtos.create.CreateThematicDto;
+import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.dtos.update.UpdateThematicDto;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.repositories.ComfortRepository;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.repositories.DetailThematicComfortRepository;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.repositories.ThematicRepository;
@@ -154,16 +155,127 @@ public class ThematicServiceImpl implements ThematicService {
     }
 
     @Override
-    public ResponseWrapper<Thematic> update(Long id, Thematic thematic) {
-        return null;
+    @Transactional
+    public ResponseWrapper<Object> update(Long id, UpdateThematicDto thematic) {
+
+        logger.info("Iniciando Acción - Actualizar una temática dado su ID");
+
+        try{
+
+            Optional<Thematic> thematicOptional = thematicRepository.getByIdComplementated(id);
+            if( thematicOptional.isPresent() ){
+
+                Thematic thematicDb = thematicOptional.orElseThrow();
+
+                //? Validemos que no se repita la comodidad
+                String thematicName = thematic.getName().trim().toUpperCase();
+                Optional<Thematic> getThematicOptionalName = thematicRepository.getThematicByNameForEdit(thematicName, id);
+
+                if( getThematicOptionalName.isPresent() ){
+                    logger.info("La temática no se puede actualizar porque el nombre ya está registrado");
+                    return new ResponseWrapper<>(null, "El nombre de la temática ya está registrado");
+                }
+
+                //? Vamos a actualizar si llegamos hasta acá
+                thematicDb.setName(thematicName);
+                thematicDb.setDescription(thematic.getDescription());
+                thematicDb.setUserUpdated(dummiesUser);
+                thematicDb.setDateUpdated(new Date());
+
+                Thematic saveThematic = thematicRepository.save(thematicDb);
+
+                //? Ahora, vamos a reingresar las comodidades
+                //* Borremos las que teníamos
+                thematicRepository.deleteDetailThematicComfortsByThematicId(id);
+
+                //* Ingresemos nuevamente
+                List<Long> forErrorComfort = new ArrayList<>();
+                Set<DetailThematicComfort> details = new HashSet<>();
+                for (Long comfortId: thematic.getComfortsListId()){
+
+                    //? Verifiquémos que el ID de Comodidad Exista y lo Registramos
+                    Optional<Comfort> getComfortOptional = comfortRepository.findById(comfortId);
+                    if( getComfortOptional.isPresent() ) {
+
+                        Comfort valueComfort = getComfortOptional.orElseThrow();
+                        DetailThematicComfort detailThematic = new DetailThematicComfort();
+                        detailThematic.setThematic(saveThematic);
+                        detailThematic.setComfort(valueComfort);
+                        detailThematic.setUserCreated(dummiesUser); //! Ajustar cuando se implemente Security
+                        detailThematic.setDateCreated(new Date()); //! Ajustar cuando se implemente Security
+                        DetailThematicComfort detail = detailThematicComfortRepository.save(detailThematic);
+                        details.add(detail);
+
+                    }else{
+                        forErrorComfort.add(comfortId);
+                    }
+
+                }
+
+                saveThematic.setDetailThematicComforts(details);
+                logger.info("Temática actualizada correctamente");
+                if(!forErrorComfort.isEmpty()){
+
+                    logger.info("Existen comodidades que no pudieron ser registradas en la actualización, [{}]", forErrorComfort);
+                    return new ResponseWrapper<>(saveThematic,
+                            "Temática actualizada correctamente, existen comodidades que no pudieron ser registradas, revise el log");
+
+                }
+
+                logger.info("La temática fue actualizada correctamente");
+                return new ResponseWrapper<>(thematicRepository.getByIdComplementated(id), "Temática Actualizada Correctamente");
+
+            }else{
+
+                return new ResponseWrapper<>(null, "La temática no fue encontrada");
+
+            }
+
+        }catch (Exception err){
+
+            logger.error("Ocurrió un error al intentar actualizar temática por ID, detalles ...", err);
+            return new ResponseWrapper<>(null, "La temática no pudo ser actualizada");
+
+        }
+
     }
 
     @Override
-    public ResponseWrapper<Thematic> delete(Long id) {
-        return null;
+    @Transactional
+    public ResponseWrapper<Object> delete(Long id) {
+
+        try{
+
+            Optional<Thematic> thematicOptional = thematicRepository.getByIdComplementated(id);
+
+            if( thematicOptional.isPresent() ){
+
+                Thematic thematicDb = thematicOptional.orElseThrow();
+
+                //? Vamos a actualizar si llegamos hasta acá
+                //? ESTO SERÁ UN ELIMINADO LÓGICO!
+                thematicDb.setStatus(false);
+                thematicDb.setUserUpdated("usuario123");
+                thematicDb.setDateUpdated(new Date());
+
+                return new ResponseWrapper<>(thematicRepository.save(thematicDb), "Temática Eliminada Correctamente");
+
+            }else{
+
+                return new ResponseWrapper<>(null, "La temática no fue encontrado");
+
+            }
+
+        }catch (Exception err) {
+
+            logger.error("Ocurrió un error al intentar eliminar lógicamente temática por ID, detalles ...", err);
+            return new ResponseWrapper<>(null, "La temática no pudo ser eliminada");
+
+        }
+
     }
 
-    //* Para el buscador de planes.
+    //* Para el buscador de temáticas.
     //? Buscarémos tanto por name como por description.
     //? NOTA: No olvidar el status.
     public Specification<Thematic> searchByFilter(String search) {

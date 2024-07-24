@@ -7,6 +7,7 @@ import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.common.utils.Error
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.common.utils.ResponseWrapper;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.Thematic;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.dtos.create.CreateThematicDto;
+import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.dtos.update.UpdateThematicDto;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.services.ThematicService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -150,7 +151,7 @@ public class ThematicController {
                     .body(new ApiResponse<>(
                             null,
                             new ApiResponse.Meta(
-                                    "El ID proporcionado es inválido.",
+                                    "El ID proporcionado es inválido para obtener por ID.",
                                     HttpStatus.OK.value(),
                                     LocalDateTime.now()
                             )
@@ -176,6 +177,114 @@ public class ThematicController {
                         null,
                         new ApiResponse.Meta(
                                 thematic.getErrorMessage(),
+                                HttpStatus.BAD_REQUEST.value(),
+                                LocalDateTime.now()
+                        )
+                ));
+
+    }
+
+    @PutMapping("update-by-id/{id}")
+    @Operation(summary = "Actualizar una temática", description = "Actualizar una temática dado el ID")
+    public ResponseEntity<ApiResponse<Object>> update(
+            @Valid
+            @RequestBody UpdateThematicDto thematicRequest,
+            BindingResult result,
+            @PathVariable String id
+    ){
+
+        if(result.hasFieldErrors()){
+            ErrorsValidationsResponse errors = new ErrorsValidationsResponse();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(
+                            errors.validation(result),
+                            new ApiResponse.Meta(
+                                    "Errores en los campos de actualización",
+                                    HttpStatus.BAD_REQUEST.value(),
+                                    LocalDateTime.now()
+                            )
+                    ));
+        }
+
+        ResponseWrapper<Object> thematicUpdate;
+
+        try {
+            Long thematicId = Long.parseLong(id);
+            thematicUpdate = thematicService.update(thematicId, thematicRequest);
+        }catch (NumberFormatException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(
+                            null,
+                            new ApiResponse.Meta(
+                                    "El ID proporcionado es inválido para actualizar.",
+                                    HttpStatus.OK.value(),
+                                    LocalDateTime.now()
+                            )
+                    ));
+        }
+
+        if( thematicUpdate.getData() != null ){
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(new ApiResponse<>(
+                            thematicUpdate.getData(),
+                            new ApiResponse.Meta(
+                                    "Temática Actualizada Correctamente.",
+                                    HttpStatus.OK.value(),
+                                    LocalDateTime.now()
+                            )
+                    ));
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>(
+                        null,
+                        new ApiResponse.Meta(
+                                thematicUpdate.getErrorMessage(),
+                                HttpStatus.BAD_REQUEST.value(),
+                                LocalDateTime.now()
+                        )
+                ));
+
+    }
+
+    @DeleteMapping("/delete-by-id/{id}")
+    @Operation(summary = "Eliminar uns temática", description = "Eliminar un plan pero de manera lógica")
+    public ResponseEntity<ApiResponse<Object>> delete(@PathVariable String id){
+
+        ResponseWrapper<Object> thematicUpdate;
+
+        try {
+            Long thematicId = Long.parseLong(id);
+            thematicUpdate = thematicService.delete(thematicId);
+        }catch (NumberFormatException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(
+                            null,
+                            new ApiResponse.Meta(
+                                    "El ID proporcionado es inválido.",
+                                    HttpStatus.OK.value(),
+                                    LocalDateTime.now()
+                            )
+                    ));
+        }
+
+        if( thematicUpdate.getData() != null ){
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(new ApiResponse<>(
+                            thematicUpdate.getData(),
+                            new ApiResponse.Meta(
+                                    "Temática Eliminada Correctamente.",
+                                    HttpStatus.OK.value(),
+                                    LocalDateTime.now()
+                            )
+                    ));
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>(
+                        null,
+                        new ApiResponse.Meta(
+                                thematicUpdate.getErrorMessage(),
                                 HttpStatus.BAD_REQUEST.value(),
                                 LocalDateTime.now()
                         )

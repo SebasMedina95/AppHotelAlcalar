@@ -188,7 +188,7 @@ public class ComfortServiceImpl implements ComfortService {
 
     }
 
-    //* Para el buscador de planes.
+    //* Para el buscador de comodidades.
     //? Buscarémos tanto por name como por description.
     //? NOTA: No olvidar el status.
     public Specification<Comfort> searchByFilter(String search) {
