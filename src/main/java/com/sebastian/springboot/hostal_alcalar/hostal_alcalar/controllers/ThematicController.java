@@ -248,7 +248,7 @@ public class ThematicController {
     }
 
     @DeleteMapping("/delete-by-id/{id}")
-    @Operation(summary = "Eliminar uns temática", description = "Eliminar un plan pero de manera lógica")
+    @Operation(summary = "Eliminar una temática", description = "Eliminar una temática pero de manera lógica")
     public ResponseEntity<ApiResponse<Object>> delete(@PathVariable String id){
 
         ResponseWrapper<Object> thematicUpdate;

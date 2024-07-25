@@ -6,8 +6,11 @@ import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.common.utils.Custo
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.common.utils.ErrorsValidationsResponse;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.common.utils.ResponseWrapper;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.Room;
+import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.Thematic;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.dtos.create.CreateRoomDto;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.dtos.others.GenericRoomDto;
+import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.dtos.update.UpdateRoomDto;
+import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities.dtos.update.UpdateThematicDto;
 import com.sebastian.springboot.hostal_alcalar.hostal_alcalar.services.RoomService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -133,6 +136,162 @@ public class RoomController {
                         LocalDateTime.now()
                 )
         ));
+
+    }
+
+    @PutMapping("update-by-id/{id}")
+    @Operation(summary = "Actualizar una habitación", description = "Actualizar una habitación dado el ID")
+    public ResponseEntity<ApiResponse<Object>> update(
+            @Valid
+            @RequestBody UpdateRoomDto roomRequest,
+            BindingResult result,
+            @PathVariable String id
+    ){
+
+        if(result.hasFieldErrors()){
+            ErrorsValidationsResponse errors = new ErrorsValidationsResponse();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(
+                            errors.validation(result),
+                            new ApiResponse.Meta(
+                                    "Errores en los campos de actualización",
+                                    HttpStatus.BAD_REQUEST.value(),
+                                    LocalDateTime.now()
+                            )
+                    ));
+        }
+
+        ResponseWrapper<Room> roomUpdate;
+
+        try {
+            Long roomId = Long.parseLong(id);
+            roomUpdate = roomService.update(roomId, roomRequest);
+        }catch (NumberFormatException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(
+                            null,
+                            new ApiResponse.Meta(
+                                    "El ID proporcionado es inválido para actualizar.",
+                                    HttpStatus.OK.value(),
+                                    LocalDateTime.now()
+                            )
+                    ));
+        }
+
+        if( roomUpdate.getData() != null ){
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(new ApiResponse<>(
+                            roomUpdate.getData(),
+                            new ApiResponse.Meta(
+                                    "Habitación Actualizada Correctamente.",
+                                    HttpStatus.OK.value(),
+                                    LocalDateTime.now()
+                            )
+                    ));
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>(
+                        null,
+                        new ApiResponse.Meta(
+                                roomUpdate.getErrorMessage(),
+                                HttpStatus.BAD_REQUEST.value(),
+                                LocalDateTime.now()
+                        )
+                ));
+
+    }
+
+    @DeleteMapping("/delete-by-id/{id}")
+    @Operation(summary = "Eliminar una habitación", description = "Eliminar una habitación pero de manera lógica")
+    public ResponseEntity<ApiResponse<Object>> delete(@PathVariable String id){
+
+        ResponseWrapper<Room> roomUpdate;
+
+        try {
+            Long roomId = Long.parseLong(id);
+            roomUpdate = roomService.delete(roomId);
+        }catch (NumberFormatException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(
+                            null,
+                            new ApiResponse.Meta(
+                                    "El ID proporcionado es inválido.",
+                                    HttpStatus.OK.value(),
+                                    LocalDateTime.now()
+                            )
+                    ));
+        }
+
+        if( roomUpdate.getData() != null ){
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(new ApiResponse<>(
+                            roomUpdate.getData(),
+                            new ApiResponse.Meta(
+                                    "Habitación Eliminada Correctamente.",
+                                    HttpStatus.OK.value(),
+                                    LocalDateTime.now()
+                            )
+                    ));
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>(
+                        null,
+                        new ApiResponse.Meta(
+                                roomUpdate.getErrorMessage(),
+                                HttpStatus.BAD_REQUEST.value(),
+                                LocalDateTime.now()
+                        )
+                ));
+
+    }
+
+    @GetMapping("/find-by-id/{id}")
+    @Operation(summary = "Obtener habitaciones por ID", description = "Obtener una habitación dado el ID")
+    public ResponseEntity<ApiResponse<Object>> findById(@PathVariable String id){
+
+        ResponseWrapper<GenericRoomDto> room;
+
+        //Validamos que el ID que nos proporcionan por la URL sea válido
+        try {
+            Long roomId = Long.parseLong(id);
+            room = roomService.findById(roomId);
+        }catch (NumberFormatException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(
+                            null,
+                            new ApiResponse.Meta(
+                                    "El ID proporcionado es inválido para obtener por ID.",
+                                    HttpStatus.OK.value(),
+                                    LocalDateTime.now()
+                            )
+                    ));
+        }
+
+        //Si es diferente de null implica que lo encontramos
+        if( room.getData() != null ){
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(new ApiResponse<>(
+                            room.getData(),
+                            new ApiResponse.Meta(
+                                    "Habitación obtenida por ID.",
+                                    HttpStatus.OK.value(),
+                                    LocalDateTime.now()
+                            )
+                    ));
+        }
+
+        //En caso contrario, algún null, ocurrió un error
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>(
+                        null,
+                        new ApiResponse.Meta(
+                                room.getErrorMessage(),
+                                HttpStatus.BAD_REQUEST.value(),
+                                LocalDateTime.now()
+                        )
+                ));
 
     }
 

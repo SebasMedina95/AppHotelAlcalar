@@ -127,18 +127,131 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public ResponseWrapper<Room> findById(Long id) {
-        return null;
+    @Transactional(readOnly = true)
+    public ResponseWrapper<GenericRoomDto> findById(Long id) {
+
+        logger.info("Iniciando Acción - Obteniendo una Habitación por ID");
+
+        try{
+
+            Optional<Room> roomOptional = roomRepository.findById(id);
+            if( roomOptional.isPresent() ){
+                Room room = roomOptional.orElseThrow();
+
+                GenericRoomDto finalResponse = new GenericRoomDto();
+                finalResponse.setId(room.getId());
+                finalResponse.setName(room.getName());
+                finalResponse.setMaintenance(room.getMaintenance());
+                finalResponse.setStatus(room.getStatus());
+                finalResponse.setThematicName(room.getThematic().getName());
+                finalResponse.setUserCreated(room.getUserCreated());
+                finalResponse.setDateCreated(room.getDateCreated());
+                finalResponse.setUserUpdated(room.getUserUpdated());
+                finalResponse.setDateUpdated(room.getDateUpdated());
+
+                logger.info("La habitación fue encontrada correctamente dado su ID {}", id);
+                return new ResponseWrapper<>(finalResponse, "Habitación encontrada por ID correctamente");
+            }
+
+            logger.info("La habitación no fue encontrada dado su ID {}", id);
+            return new ResponseWrapper<>(null, "La habitación no pudo ser encontrado por el ID " + id);
+
+        }catch (Exception err){
+
+            logger.error("Ocurrió un error al intentar obtener la habitación por ID {}, detalles: ", id, err);
+            return new ResponseWrapper<>(null, "La habitación no pudo ser encontrado por el ID");
+
+        }
+
     }
 
     @Override
+    @Transactional
     public ResponseWrapper<Room> update(Long id, UpdateRoomDto room) {
-        return null;
+
+        logger.info("Iniciando Acción - Actualizar una habitación dado su ID");
+
+        try{
+
+            Optional<Room> roomOptional = roomRepository.findById(id);
+            if( roomOptional.isPresent() ){
+
+                Room roomDb = roomOptional.orElseThrow();
+
+                //? Validemos que no se repita la habitación
+                String roomName = room.getName().trim().toUpperCase();
+                Optional<Room> getRoomOptionalName = roomRepository.getRoomByNameForEdit(roomName, id);
+
+                if( getRoomOptionalName.isPresent() ){
+                    logger.info("La habitación no se puede actualizar porque el nombre ya está registrado");
+                    return new ResponseWrapper<>(null, "El nombre de la habitación ya está registrado");
+                }
+
+                //? Validemos la temática que nos están proporcionando
+                Optional<Thematic> getThematicOptional = thematicRepository.findById(room.getThematicId());
+                if(getThematicOptional.isEmpty())
+                    return new ResponseWrapper<>(null, "La temática a la que está intentando asociar la habitación no existe");
+
+                Thematic getThematic = getThematicOptional.orElseThrow();
+
+                //? Vamos a actualizar si llegamos hasta acá
+                roomDb.setName(roomName);
+                roomDb.setMaintenance(room.getMaintenance());
+                roomDb.setThematic(getThematic);
+                roomDb.setUserUpdated(dummiesUser);
+                roomDb.setDateUpdated(new Date());
+
+                logger.info("La habitación fue actualizada correctamente");
+                return new ResponseWrapper<>(roomRepository.save(roomDb), "Habitación Actualizada Correctamente");
+
+            }else{
+
+                return new ResponseWrapper<>(null, "La habitación no fue encontrada");
+
+            }
+
+        }catch (Exception err){
+
+            logger.error("Ocurrió un error al intentar actualizar temática por ID, detalles ...", err);
+            return new ResponseWrapper<>(null, "La temática no pudo ser actualizada");
+
+        }
+
     }
 
     @Override
+    @Transactional
     public ResponseWrapper<Room> delete(Long id) {
-        return null;
+
+        try{
+
+            Optional<Room> roomOptional = roomRepository.findById(id);
+
+            if( roomOptional.isPresent() ){
+
+                Room roomDb = roomOptional.orElseThrow();
+
+                //? Vamos a actualizar si llegamos hasta acá
+                //? ESTO SERÁ UN ELIMINADO LÓGICO!
+                roomDb.setStatus(false);
+                roomDb.setUserUpdated("usuario123");
+                roomDb.setDateUpdated(new Date());
+
+                return new ResponseWrapper<>(roomRepository.save(roomDb), "Habitación Eliminada Correctamente");
+
+            }else{
+
+                return new ResponseWrapper<>(null, "La habitación no fue encontrado");
+
+            }
+
+        }catch (Exception err) {
+
+            logger.error("Ocurrió un error al intentar eliminar lógicamente habitación por ID, detalles ...", err);
+            return new ResponseWrapper<>(null, "La habitación no pudo ser eliminada");
+
+        }
+
     }
 
     //* Para el buscador de temáticas.

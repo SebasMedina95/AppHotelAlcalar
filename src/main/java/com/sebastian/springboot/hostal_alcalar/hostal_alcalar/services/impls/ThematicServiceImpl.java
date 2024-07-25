@@ -167,7 +167,7 @@ public class ThematicServiceImpl implements ThematicService {
 
                 Thematic thematicDb = thematicOptional.orElseThrow();
 
-                //? Validemos que no se repita la comodidad
+                //? Validemos que no se repita la temática
                 String thematicName = thematic.getName().trim().toUpperCase();
                 Optional<Thematic> getThematicOptionalName = thematicRepository.getThematicByNameForEdit(thematicName, id);
 

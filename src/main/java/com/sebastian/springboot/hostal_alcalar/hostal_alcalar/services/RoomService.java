@@ -12,7 +12,7 @@ public interface RoomService {
 
     ResponseWrapper<Room> create(CreateRoomDto room);
     Page<GenericRoomDto> findAll(String search, Pageable pageable);
-    ResponseWrapper<Room> findById(Long id);
+    ResponseWrapper<GenericRoomDto> findById(Long id);
     ResponseWrapper<Room> update(Long id, UpdateRoomDto room);
     ResponseWrapper<Room> delete(Long id);
 
