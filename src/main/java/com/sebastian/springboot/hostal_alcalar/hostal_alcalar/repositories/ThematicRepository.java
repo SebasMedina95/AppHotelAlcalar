@@ -34,4 +34,5 @@ public interface ThematicRepository extends JpaRepository<Thematic, Long>, JpaSp
 
     @Query("SELECT t FROM Thematic t WHERE UPPER(t.name) = UPPER(:thematicName) AND t.id <> :id")
     Optional<Thematic> getThematicByNameForEdit(String thematicName, Long id);
+
 }

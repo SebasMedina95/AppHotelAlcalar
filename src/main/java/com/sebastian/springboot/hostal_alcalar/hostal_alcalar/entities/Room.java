@@ -1,6 +1,7 @@
 package com.sebastian.springboot.hostal_alcalar.hostal_alcalar.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
@@ -15,6 +16,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Room {
 
     @Id
@@ -26,7 +28,7 @@ public class Room {
     @Comment("Nombre de la habitación")
     private String name;
 
-    @Column(name = "MAINTENANCE" )
+    @Column(name = "MAINTENANCE", nullable = false, length = 50 )
     @Comment("Mantenimiento de la habitación")
     private String maintenance;
 
@@ -57,3 +59,4 @@ public class Room {
     private Thematic thematic;
 
 }
+
